@@ -1,0 +1,7 @@
+bin/
+obj/
+.env
+*.log
+.vs/
+.vscode/
+appsettings.Development.json

@@ -1,0 +1,30 @@
+name: lucy_mobile
+description: Real-time Audio & Chat Client for LUCY EdTech
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  
+  # Kết nối thời gian thực cho signaling (room state, mic toggle, raise hand)
+  socket_io_client: ^2.0.3
+
+  # Công nghệ truyền tải âm thanh đa kênh Agora
+  agora_rtc_engine: ^6.3.0
+
+  # Xin quyền truy cập Microphone trên Android & iOS
+  permission_handler: ^11.3.1
+
+  # Gọi REST API đến Gateway
+  http: ^1.2.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
+
+flutter:
+  uses-material-design: true

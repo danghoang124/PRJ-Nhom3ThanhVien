@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <title>LUCY – Demo Real-time Room</title>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #0f0f1a;
+      color: #e5e7eb;
+      min-height: 100vh;
+    }
+
+    header {
+      background: linear-gradient(135deg, #0d9488, #1e40af);
+      padding: 20px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    header h1 { font-size: 22px; font-weight: 700; }
+    header p  { font-size: 13px; opacity: .75; }
+
+    .layout {
+      display: grid;
+      grid-template-columns: 340px 1fr;
+      gap: 20px;
+      padding: 24px;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    /* ── Sidebar ── */
+    .card {
+      background: #1e1e32;
+      border: 1px solid #ffffff15;
+      border-radius: 14px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+    .card h3 {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      color: #0d9488;
+      margin-bottom: 14px;
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 10px; height: 10px;
+      border-radius: 50%;
+      margin-right: 8px;
+      background: #ef4444;
+      box-shadow: 0 0 6px #ef4444;
+    }
+    .status-dot.ok { background: #22c55e; box-shadow: 0 0 8px #22c55e; }
+
+    label { font-size: 12px; color: #9ca3af; display: block; margin-bottom: 4px; margin-top: 10px; }
+    input, select {
+      width: 100%; padding: 8px 10px;
+      background: #111827; border: 1px solid #374151;
+      border-radius: 8px; color: #e5e7eb; font-size: 13px;
+    }
+
+    .btn {
+      width: 100%; padding: 10px;
+      border: none; border-radius: 8px;
+      font-size: 14px; font-weight: 600;
+      cursor: pointer; margin-top: 10px;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn:hover { opacity: .85; transform: translateY(-1px); }
+    .btn-teal   { background: #0d9488; color: #fff; }
+    .btn-blue   { background: #2563eb; color: #fff; }
+    .btn-red    { background: #dc2626; color: #fff; }
+    .btn-amber  { background: #d97706; color: #fff; }
+    .btn-gray   { background: #374151; color: #fff; }
+    .btn:disabled { opacity: .4; cursor: not-allowed; transform: none; }
+
+    /* ── Main area ── */
+    .room-header {
+      display: flex; align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+    .room-title { font-size: 18px; font-weight: 700; }
+    .room-meta  { font-size: 12px; color: #6b7280; margin-top: 4px; }
+
+    /* Danh sách users */
+    #users-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    .user-card {
+      background: #111827;
+      border: 2px solid #1f2937;
+      border-radius: 12px;
+      padding: 16px 8px;
+      text-align: center;
+      transition: border-color .3s, box-shadow .3s;
+    }
+    .user-card.mic-on  { border-color: #0d9488; box-shadow: 0 0 12px #0d948860; }
+    .user-card.hand-up { border-color: #f59e0b; box-shadow: 0 0 12px #f59e0b60; }
+
+    .avatar {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      background: #374151;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px; font-weight: 700; margin: 0 auto 8px;
+    }
+    .avatar.me   { background: #1e40af; }
+    .avatar.mentor { background: #0d9488; }
+
+    .persona-name {
+      font-size: 11px; font-weight: 600;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .icons { display: flex; justify-content: center; gap: 6px; margin-top: 6px; font-size: 14px; }
+
+    /* Controls */
+    .controls {
+      background: #141424;
+      border-radius: 14px;
+      padding: 16px 24px;
+      display: flex;
+      gap: 16px;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .ctrl-btn {
+      display: flex; flex-direction: column; align-items: center; gap: 4px;
+      background: none; border: none; cursor: pointer; color: #9ca3af;
+      font-size: 11px; transition: color .2s;
+    }
+    .ctrl-btn .icon {
+      width: 52px; height: 52px;
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 22px;
+      background: #1f2937;
+      transition: background .2s, box-shadow .2s;
+    }
+    .ctrl-btn.active .icon  { background: #0d9488; box-shadow: 0 0 14px #0d948870; color: #fff; }
+    .ctrl-btn.hand .icon    { background: #d97706; box-shadow: 0 0 14px #d9770670; color: #fff; }
+    .ctrl-btn.leave .icon   { background: #dc2626; }
+    .ctrl-btn:disabled      { opacity: .4; cursor: not-allowed; }
+
+    /* Log */
+    #log {
+      background: #060610;
+      border: 1px solid #1f2937;
+      border-radius: 10px;
+      padding: 12px 14px;
+      font-family: monospace;
+      font-size: 12px;
+      height: 180px;
+      overflow-y: auto;
+      margin-top: 16px;
+    }
+    .log-line { margin-bottom: 4px; }
+    .log-line.ok   { color: #22c55e; }
+    .log-line.info { color: #60a5fa; }
+    .log-line.warn { color: #f59e0b; }
+    .log-line.err  { color: #f87171; }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px; border-radius: 20px; font-size: 11px;
+      font-weight: 600; margin-left: 8px;
+    }
+    .badge-teal { background: #0d948820; color: #0d9488; border: 1px solid #0d9488; }
+    .badge-blue { background: #2563eb20; color: #60a5fa; border: 1px solid #2563eb; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>🎙️ LUCY – Demo Real-time Audio Room</h1>
+    <p>Socket.io + Agora RTC | Node.js :3000 → Java :8085</p>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- Sidebar -->
+  <div>
+    <!-- Trạng thái kết nối -->
+    <div class="card">
+      <h3>Trạng thái kết nối</h3>
+      <p><span class="status-dot" id="dot-socket"></span>
+         Socket.io: <strong id="txt-socket">Chưa kết nối</strong></p>
+      <p style="margin-top:8px"><span class="status-dot" id="dot-java"></span>
+         Java API: <strong id="txt-java">Đang kiểm tra...</strong></p>
+    </div>
+
+    <!-- Tạo / vào phòng -->
+    <div class="card">
+      <h3>Tạo phòng học</h3>
+      <label>Ngôn ngữ</label>
+      <select id="sel-lang">
+        <option value="en">🇺🇸 English</option>
+        <option value="zh">🇨🇳 Chinese</option>
+        <option value="ja">🇯🇵 Japanese</option>
+      </select>
+      <label>Level ID (1–198)</label>
+      <input id="inp-level" type="number" value="1" min="1" max="198"/>
+      <button class="btn btn-teal" id="btn-create">➕ Tạo phòng</button>
+    </div>
+
+    <!-- Phòng hiện có -->
+    <div class="card">
+      <h3>Phòng đang mở <span class="badge badge-blue" id="room-count">0</span></h3>
+      <div id="room-list" style="font-size:13px; color:#6b7280;">Chưa có phòng</div>
+      <button class="btn btn-gray" style="margin-top:10px" id="btn-refresh">🔄 Refresh</button>
+    </div>
+  </div>
+
+  <!-- Main -->
+  <div>
+    <div class="card">
+      <div class="room-header">
+        <div>
+          <div class="room-title" id="room-title">Chưa vào phòng nào</div>
+          <div class="room-meta" id="room-meta">Nhấn "Tạo phòng" hoặc chọn phòng đã có rồi tham gia</div>
+        </div>
+        <div>
+          <span class="badge badge-teal" id="sub-badge" style="display:none"></span>
+        </div>
+      </div>
+
+      <!-- Danh sách học viên ẩn danh -->
+      <div id="users-grid">
+        <div style="color:#4b5563; font-size:13px; padding: 20px 0;">
+          Tham gia phòng để thấy học viên ẩn danh xuất hiện tại đây...
+        </div>
+      </div>
+
+      <!-- Nút điều khiển -->
+      <div class="controls" id="controls">
+        <button class="ctrl-btn" id="btn-mic" onclick="toggleMic()" disabled>
+          <div class="icon">🔇</div>
+          <span>Bật Mic</span>
+        </button>
+        <button class="ctrl-btn" id="btn-hand" onclick="toggleHand()" disabled>
+          <div class="icon">✋</div>
+          <span>Giơ tay</span>
+        </button>
+        <button class="ctrl-btn leave" id="btn-leave" onclick="leaveRoom()" disabled>
+          <div class="icon" style="background:#dc2626">📵</div>
+          <span>Rời phòng</span>
+        </button>
+      </div>
+
+      <!-- Event log -->
+      <div id="log"><div class="log-line info">[LUCY] Chào mừng! Hãy tạo hoặc vào một phòng học để bắt đầu.</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  const SERVER = 'http://localhost:3000';
+  let socket = null;
+  let currentRoomId = null;
+  let myPersona = null;
+  let isMicOn = false;
+  let isHandUp = false;
+  const usersMap = {};
+
+  // ── Log helper ──
+  function log(msg, type='info') {
+    const box = document.getElementById('log');
+    const t   = new Date().toLocaleTimeString('vi-VN');
+    box.innerHTML += `<div class="log-line ${type}">[${t}] ${msg}</div>`;
+    box.scrollTop = box.scrollHeight;
+  }
+
+  // ── Kiểm tra Java API ──
+  async function checkJava() {
+    try {
+      const r = await fetch(`${SERVER}/proxy/java-stats`);
+      const d = await r.json();
+      if (d.error) {
+        throw new Error(d.error);
+      }
+      document.getElementById('dot-java').className = 'status-dot ok';
+      document.getElementById('txt-java').textContent = `Online – ${d.totalLevels} levels`;
+      log(`Java API: ${d.totalLevels} levels (EN:${d.levelsByLanguage.en} ZH:${d.levelsByLanguage.zh} JA:${d.levelsByLanguage.ja})`, 'ok');
+    } catch (e) {
+      document.getElementById('txt-java').textContent = 'Offline!';
+      log('Java API đang offline – hãy chạy lucy-content-service hoặc check proxy log', 'err');
+    }
+  }
+
+  // ── Kết nối Socket.io ──
+  function connectSocket() {
+    socket = io(SERVER, { transports: ['websocket'] });
+
+    socket.on('connect', () => {
+      document.getElementById('dot-socket').className = 'status-dot ok';
+      document.getElementById('txt-socket').textContent = 'Đã kết nối';
+      log('Socket.io kết nối thành công! ID: ' + socket.id, 'ok');
+    });
+
+    socket.on('disconnect', () => {
+      document.getElementById('dot-socket').className = 'status-dot';
+      document.getElementById('txt-socket').textContent = 'Mất kết nối';
+      log('Socket.io mất kết nối', 'err');
+    });
+
+    socket.on('room:joined', (data) => {
+      currentRoomId = data.room.id;
+      myPersona     = data.user.persona;
+      log(`✅ Đã vào phòng! Persona ẩn danh của bạn: ${myPersona}`, 'ok');
+      log(`🔑 Agora Token: ${data.agoraToken.token.substring(0,25)}... (${data.agoraToken.isDev ? 'Dev mode' : 'Production'})`, 'info');
+      updateRoomUI(data.room);
+      setControlsEnabled(true);
+      addUser(data.user, true);
+    });
+
+    socket.on('room:updated', (data) => {
+      updateRoomUI(data.room);
+      rebuildUsers(data.room.users);
+    });
+
+    socket.on('user:joined', (data) => {
+      log(`👤 ${data.persona} vừa tham gia phòng`, 'info');
+      addUser(data);
+    });
+
+    socket.on('user:left', (data) => {
+      log(`🚪 ${data.persona} đã rời phòng`, 'warn');
+      delete usersMap[data.persona];
+      renderUsers();
+    });
+
+    socket.on('mic:changed', (data) => {
+      log(`🎙️ ${data.persona}: Mic ${data.isMicOn ? 'BẬT' : 'TẮT'}`, 'info');
+      if (usersMap[data.persona]) usersMap[data.persona].isMicOn = data.isMicOn;
+      if (data.persona === myPersona) {
+        isMicOn = data.isMicOn;
+        const btn = document.getElementById('btn-mic');
+        btn.querySelector('.icon').textContent = isMicOn ? '🎙️' : '🔇';
+        btn.querySelector('span').textContent  = isMicOn ? 'Tắt Mic' : 'Bật Mic';
+        btn.className = isMicOn ? 'ctrl-btn active' : 'ctrl-btn';
+      }
+      renderUsers();
+    });
+
+    socket.on('hand:changed', (data) => {
+      log(`✋ ${data.persona}: ${data.isHandRaised ? 'Giơ tay!' : 'Hạ tay'}`, 'warn');
+      if (usersMap[data.persona]) usersMap[data.persona].isHandRaised = data.isHandRaised;
+      if (data.persona === myPersona) {
+        isHandUp = data.isHandRaised;
+        const btn = document.getElementById('btn-hand');
+        btn.className = isHandUp ? 'ctrl-btn hand' : 'ctrl-btn';
+        btn.querySelector('span').textContent = isHandUp ? 'Hạ tay' : 'Giơ tay';
+      }
+      renderUsers();
+    });
+
+    socket.on('sublevel:changed', (data) => {
+      log(`⏭️ Chuyển sang chặng học ${data.currentSubLevel}`, 'ok');
+      updateRoomUI(data.room);
+    });
+
+    socket.on('room:ended', (data) => {
+      log('🎉 ' + data.message, 'ok');
+      leaveRoom();
+    });
+
+    socket.on('error', (e) => log('❌ Lỗi: ' + e.message, 'err'));
+  }
+
+  // ── Tạo phòng ──
+  document.getElementById('btn-create').onclick = async () => {
+    const lang    = document.getElementById('sel-lang').value;
+    const levelId = parseInt(document.getElementById('inp-level').value);
+    const langMap = { en: 'English', zh: 'Chinese', ja: 'Japanese' };
+    log(`Đang tạo phòng Level ${levelId} (${langMap[lang]})...`);
+    try {
+      const r = await fetch(`${SERVER}/api/rooms`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ levelId, languageCode: lang, levelNumber: levelId })
+      });
+      const d = await r.json();
+      if (!r.ok) { log('Lỗi tạo phòng: ' + d.error, 'err'); return; }
+      log(`Tạo phòng thành công: ${d.room.channelName} (${d.room.levelTitle})`, 'ok');
+      loadRooms();
+      // Tự động join
+      joinRoom(d.room.id);
+    } catch(e) { log('Lỗi: ' + e.message, 'err'); }
+  };
+
+  // ── Load danh sách phòng ──
+  async function loadRooms() {
+    const r = await fetch(`${SERVER}/api/rooms`);
+    const d = await r.json();
+    document.getElementById('room-count').textContent = d.total;
+    const el = document.getElementById('room-list');
+    if (d.rooms.length === 0) { el.innerHTML = '<span style="color:#4b5563">Chưa có phòng</span>'; return; }
+    el.innerHTML = d.rooms.map(room => `
+      <div style="border:1px solid #374151;border-radius:8px;padding:10px;margin-bottom:8px;cursor:pointer;transition:background .2s"
+           onmouseover="this.style.background='#374151'" onmouseout="this.style.background=''"
+           onclick="joinRoom('${room.id}')">
+        <div style="font-weight:600;font-size:13px">${room.channelName}</div>
+        <div style="color:#6b7280;font-size:11px;margin-top:2px">
+          ${room.levelTitle || 'Level ' + room.levelNumber} &nbsp;·&nbsp;
+          ${room.userCount || 0} người &nbsp;·&nbsp;
+          <span style="color:${room.status==='active'?'#22c55e':'#f59e0b'}">${room.status}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  document.getElementById('btn-refresh').onclick = loadRooms;
+
+  // ── Join phòng ──
+  function joinRoom(roomId) {
+    if (currentRoomId) { log('Đang rời phòng cũ trước...', 'warn'); socket.emit('room:leave'); }
+    Object.keys(usersMap).forEach(k => delete usersMap[k]);
+    log(`Đang join phòng ${roomId}...`);
+    socket.emit('room:join', { roomId, agoraUid: 0 });
+  }
+
+  // ── Controls ──
+  function toggleMic() {
+    isMicOn = !isMicOn;
+    socket.emit('mic:toggle', { isMicOn });
+  }
+  function toggleHand() {
+    isHandUp ? socket.emit('hand:lower') : socket.emit('hand:raise');
+  }
+  function leaveRoom() {
+    if (!currentRoomId) return;
+    socket.emit('room:leave');
+    currentRoomId = null; myPersona = null;
+    isMicOn = false; isHandUp = false;
+    Object.keys(usersMap).forEach(k => delete usersMap[k]);
+    document.getElementById('users-grid').innerHTML = '<div style="color:#4b5563;font-size:13px;padding:20px 0">Đã rời phòng.</div>';
+    document.getElementById('room-title').textContent = 'Chưa vào phòng nào';
+    document.getElementById('room-meta').textContent  = '';
+    document.getElementById('sub-badge').style.display = 'none';
+    setControlsEnabled(false);
+    log('Đã rời phòng.', 'warn');
+    loadRooms();
+  }
+
+  // ── UI helpers ──
+  function updateRoomUI(room) {
+    document.getElementById('room-title').textContent = room.levelTitle || room.channelName;
+    document.getElementById('room-meta').textContent  =
+      `Kênh: ${room.channelName} · Chặng ${room.currentSubLevel}/${room.totalSubLevels} · ${room.userCount} người`;
+    const badge = document.getElementById('sub-badge');
+    badge.style.display = 'inline-block';
+    badge.textContent = `Chặng ${room.currentSubLevel}/${room.totalSubLevels}`;
+  }
+
+  function addUser(user, isMe=false) {
+    usersMap[user.persona] = { ...user, isMe };
+    renderUsers();
+  }
+  function rebuildUsers(users) {
+    const list = Array.isArray(users) ? users : Object.values(users);
+    list.forEach(u => {
+      const isMe = u.persona === myPersona;
+      usersMap[u.persona] = { ...u, isMe };
+    });
+    renderUsers();
+  }
+  function renderUsers() {
+    const grid = document.getElementById('users-grid');
+    const list = Object.values(usersMap);
+    if (!list.length) { grid.innerHTML = ''; return; }
+    grid.innerHTML = list.map(u => `
+      <div class="user-card ${u.isMicOn?'mic-on':''} ${u.isHandRaised?'hand-up':''}">
+        <div class="avatar ${u.isMe?'me':''}">${u.persona[0]}</div>
+        <div class="persona-name">${u.persona}${u.isMe?' (Bạn)':''}</div>
+        <div class="icons">
+          <span title="Mic">${u.isMicOn ? '🎙️' : '🔇'}</span>
+          <span title="Tay">${u.isHandRaised ? '✋' : ''}</span>
+        </div>
+      </div>
+    `).join('');
+  }
+
+  function setControlsEnabled(on) {
+    ['btn-mic','btn-hand','btn-leave'].forEach(id => {
+      document.getElementById(id).disabled = !on;
+    });
+  }
+
+  // ── Khởi động ──
+  checkJava();
+  connectSocket();
+  loadRooms();
+</script>
+</body>
+</html>

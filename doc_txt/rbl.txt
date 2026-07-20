@@ -1,0 +1,87 @@
+Bản Kế hoạch Hành động (Action Plan) theo phương pháp RBL
+ được thiết kế riêng cho lớp 35 sinh viên (7 nhóm x 5 thành viên).
+TỔNG QUAN CHIẾN LƯỢC (THE 42 WAY)
+Triết lý "Bể bơi" (Piscine):
+ Ném sinh viên vào một bài toán thực tế (Dự án LUCY) ngay từ ngày đầu.
+Tự chủ nghiên cứu
+: 
+Giảng viên chỉ đóng vai trò "Scrum Master" hoặc người định hướng (Facilitator), cung cấp tài liệu và từ khóa. Sinh viên tự tìm tòi cách làm.
+Đánh giá chéo (Peer-Evaluation):
+ 7 nhóm cùng làm 1 project giống nhau, sau mỗi chặng sẽ đổi chéo code cho nhau để review và tìm lỗi.
+ACTION PLAN: RESEARCH-BASED LEARNING (4 TỪ KHÓA - 4 GIAI ĐOẠN)
+Mục tiêu cốt lõi: Thiết lập hạ tầng, số hóa 8 file Word (LISA/Chinese/Japanese) vào Database, xây dựng API quản lý lộ trình học tập bằng Java.
+Giai đoạn 1: Khám phá & Đặt câu hỏi nghiên cứu (Problem Formulation)
+Khung thời gian:
+ Tuần 1 
+Nhiệm vụ của 7 nhóm:
+ Tự phân tích yêu cầu kiến trúc Content & LMS và thiết kế Cơ sở dữ liệu (Database).
+Nội dung nghiên cứu:
+ 
+Đọc và hiểu đặc tả dự án LUCY: Hệ thống tự động hóa nội dung, chia làm 3 Stage (Sơ cấp, Trung cấp, Cao cấp) với 100 level ngôn ngữ.
+Nghiên cứu về cơ sở dữ liệu quan hệ (Relational Database) như MySQL hoặc MS SQL Server 2019. Nghiên cứu cách thiết kế bảng (tables) để lưu trữ nội dung từng chặng (10-20 phút) và câu hỏi AI Support.
+Tìm hiểu sự khác biệt giữa lưu trữ bằng Flat file (như file Word) và Relational Database để hiểu tại sao cần phải số hóa.
+Hoạt động kiểu "42":
+ 
+Các nhóm tự phác thảo sơ đồ ERD (Entity Relationship Diagram) lên bảng trắng.
+Không có bài giảng lý thuyết. Giảng viên chỉ cung cấp keyword: 
+"Java EE, MySQL, JPA Entities, Database Schema"
+.
+Giai đoạn 2: Tự học cấu hình & Thiết lập nền tảng (Infrastructure Setup)
+Khung thời gian:
+ Tuần 1 - 2 
+Nhiệm vụ của 7 nhóm:
+ Thiết lập môi trường phát triển và kết nối Cơ sở dữ liệu.
+Nội dung nghiên cứu:
+ 
+Nghiên cứu tài liệu giáo trình (Chapter 1 & 2): Thiết lập môi trường Tomcat 9+, JDK 1.8+, và IDE Netbeans.
+Nghiên cứu công nghệ kết nối DB: Tìm hiểu về 
+JDBC
+ (Java Database Connectivity) hoặc nâng cao hơn là 
+JPA (Java Persistence API)
+ và Spring Data để ánh xạ dữ liệu thành các Entity trong Java.
+Nghiên cứu cách đọc file Word: Vì giáo trình PRJ301 không dạy trực tiếp xử lý file Word, sinh viên phải tự rèn năng lực "Nghiên cứu mở" (tìm hiểu thư viện như Apache POI) để bóc tách dữ liệu từ 8 file tài liệu LISA/Chinese/Japanese.
+Hoạt động kiểu "42":
+ 
+Chia sẻ tài nguyên: Nếu Nhóm 1 tìm ra cách đọc file Word hiệu quả nhất, họ có thể tổ chức một mini-workshop (tầm 15 phút) để chia sẻ từ khóa cho 6 nhóm còn lại.
+Giai đoạn 3: Thực thi số hóa & Thiết kế API (Execution & Prototyping)
+Khung thời gian:
+ Tuần 2 - 3 
+Nhiệm vụ của 7 nhóm:
+ Viết logic import dữ liệu và xây dựng API lấy nội dung.
+Nội dung nghiên cứu:
+ 
+Backend & MVC:
+ Xây dựng cấu trúc ứng dụng Web dựa trên mô hình MVC (Model-View-Controller) kết hợp Servlet làm Controller.
+Viết API:
+ Áp dụng nguyên trúc RESTful API (Create, Read, Update, Delete) với các phương thức HTTP (GET, POST) để làm API trả dữ liệu nội dung theo từng Level cho hệ thống Node.js.
+Giải quyết xung đột:
+ Nghiên cứu công cụ 
+Swagger
+ để làm tài liệu chung cho API, đảm bảo giao tiếp trơn tru giữa Java Backend và các Dev khác.
+Đầu ra (Deliverable):
+ Một bộ mã nguồn Java có khả năng quét 8 file docx, bóc tách text/câu hỏi/stage, đẩy vào CSDL, và cung cấp API lấy dữ liệu.
+Giai đoạn 4: Đánh giá chéo & Bảo vệ (Peer-Review & Defense)
+Khung thời gian:
+ Cuối chặng (Mô phỏng buổi nghiệm thu) 
+Nhiệm vụ:
+ Tìm bug, cải tiến mã nguồn và trình bày.
+Cơ chế Peer-Review (Điểm nhấn của Đại học 42):
+ 
+Chấm chéo vòng tròn: Nhóm 1 lấy mã nguồn của Nhóm 2, Nhóm 2 lấy của Nhóm 3,...
+Yêu cầu các nhóm cài đặt mã nguồn của nhóm bạn lên máy mình, chạy thử công cụ import file Word xem có bị lỗi (crash) không, gọi thử API thông qua Swagger xem dữ liệu trả về có chuẩn cấu trúc 100 level không.
+Gamification (Hệ thống cấp độ):
+ 
+Cấp điểm XP (Experience Points) thay vì điểm số truyền thống. Nhóm nào có code chạy nhanh nhất, kiến trúc Database tối ưu nhất, hoặc tìm được bug chí mạng (như lỗi bảo mật rò rỉ token) của nhóm khác sẽ nhận được Bonus XP.
+VAI TRÒ CỦA GIẢNG VIÊN (FACILITATOR) TRONG MÔ HÌNH RÀY:
+Không giải đáp trực tiếp:
+ Khi sinh viên hỏi 
+"Thầy ơi file Word đọc kiểu gì?"
+, giảng viên đáp: 
+"Các em đã thử tìm hiểu các thư viện open-source cho định dạng OOXML của Java chưa? Hãy thử xem Log báo lỗi gì"
+.
+Định hướng tài liệu:
+ Chỉ định sinh viên đọc các chương cụ thể trong sách 
+Professional Java for Web Applications
+ để hiểu về Servlet (Chapter 2, 3), Logging (Chapter 14).
+Kiểm soát rủi ro dự án:
+ Nhắc nhở sinh viên tuân thủ kiến trúc Microservices và chuẩn tài liệu Swagger để tránh xung đột API sau này.

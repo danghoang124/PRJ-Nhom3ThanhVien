@@ -1,0 +1,64 @@
+PRJ301
+/302
+ Project Evaluation Rubric
+Criteria
+Max Points
+Details
+Database Design
+10
+- 5–6 well-structured tables with normalization (10 pts)
+- Implemented in SQL Server with sample data (5 pts)
+- ERD or clear relationship diagram (5 pts)
+Business Logic 
+Implementation
+10
+- Clear business flow / use-case diagram (5 pts)
+- Input validation (5 pts)
+User Interface (UI/UX)
+10
+- User-friendly interface (5 pts)
+- Smooth navigation between pages (5 pts)
+Contents (Project Quality)
+25
+- 
+1% - 5%: Poor interface, missing features, unclear or copied idea.
+- 
+6% - 20%: Weak overall design, no clear workflow or data model.
+- 
+21% - 50%: Usable but inconsistent system, disconnected UI, DB, logic.
+- 
+51% - 60%: Clear idea and basic working system with proper architecture (e.g. MVC).
+- 
+61% - 70%: Well-developed system with logical flow, good code structure.
+- 
+71% - 100%: Fully complete system with advanced integration (e.g. AI, API), clear documentation and logic.
+Application (Use of Concepts)
+25
+- 
+0% - 5%: Incorrect or no application of relevant technologies.
+-
+ 6% - 20%: Incorrect or weak use of technologies (e.g. improper JDBC use).
+-
+ 21% - 50%: Basic but unoptimized use of relevant tech (Servlets, JDBC, SQL).
+-
+ 51% - 60%: Correct use of technologies like MVC
+2
+, JavaBeans, SQL logic.
+-
+ 61% - 80%: Good application with session management, pagination, error handling
+, input validation
+.
+-
+ 81% - 100%: Excellent integration of advanced features (AI, API, security), optimized queries, reusable components. Clear explanation in demo.
+AI Integration
+10
+- Functional AI feature (10 pts)
+- Explanation of logic/algorithm (5 pts)
+Report & Documentation
+5
+- Complete report: requirements, design, functionalities, AI (5 pts)
+Demo & Q&A
+5
+- Smooth demo and confident explanation (5 pts)
+Total
+100
